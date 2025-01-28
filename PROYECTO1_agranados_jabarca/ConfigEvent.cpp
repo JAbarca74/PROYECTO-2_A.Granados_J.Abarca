@@ -286,7 +286,7 @@ void ConfigEvent::processPurchase(int seatsPurchased, string& numberReserveSeats
 		system("cls");
 	}
 	printInvoice(totalSeatsPurchase, temporalDiscount, temporalTotal + temporalDiscount, temporalTotal);
-	cout << endl;
+	cout << endl << " ";
 	system("pause");
 	system("cls");
 }
