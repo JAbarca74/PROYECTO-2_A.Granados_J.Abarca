@@ -359,24 +359,24 @@ string ConfigEvent::getDiscountCode()
 
 bool ConfigEvent::reserveSeatInSegment(int temporalSegment, string& numberReserveSeats)
 {
-	string seleccionAsiento;
-	bool asientoReservado;
+	string selectNewSeat;
+	bool reservedSeatFront;
 	do
 	{
 		cout << "Introduce el asiento (por ejemplo, A1): ";
-		cin >> seleccionAsiento;
+		cin >> selectNewSeat;
 
-		asientoReservado = segmentsSpace[temporalSegment - 1].reserveSeat(seleccionAsiento);
-		if (!asientoReservado)
+		reservedSeatFront = segmentsSpace[temporalSegment - 1].reserveSeat(selectNewSeat);
+		if (!reservedSeatFront)
 		{
-			cout << RED << "El asiento " << seleccionAsiento << " no existe o ya esta reservado." << RESET << endl;
+			cout << RED << "El asiento " << selectNewSeat << " no existe o ya esta reservado." << RESET << endl;
 		}
-	} while (!asientoReservado);
+	} while (!reservedSeatFront);
 
-	client.addReservedSeat(seleccionAsiento);
-	numberReserveSeats += seleccionAsiento + " ";
-	cout << "Asiento " << seleccionAsiento << " reservado correctamente." << endl;
-	return asientoReservado;
+	client.addReservedSeat(selectNewSeat);
+	numberReserveSeats += selectNewSeat + " ";
+	cout << "Asiento " << selectNewSeat << " reservado correctamente." << endl;
+	return reservedSeatFront;
 }
 
 float ConfigEvent::calculateTotalPrice(string auxCode, int temporalSegment)
