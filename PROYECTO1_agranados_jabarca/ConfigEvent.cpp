@@ -1,5 +1,31 @@
 #include "ConfigEvent.h"
 
+string ConfigEvent::getNameEvent()
+{
+	return nameEvent;
+}
+
+string ConfigEvent::getDateEvent()
+{
+	return dateEvent;
+}
+
+void ConfigEvent::setNameEvent(string _nameEvent)
+{
+	nameEvent = _nameEvent;
+}
+
+void ConfigEvent::setDateEvent(string _dateEvent)
+{
+	dateEvent = _dateEvent;
+}
+
+void ConfigEvent::setSegmentSpace(int _segmentSpace)
+{
+	segmentsEvent = _segmentSpace;
+	sizeSegmentsSpace = _segmentSpace;
+}
+
 void ConfigEvent::printSeparatorIdeas()
 {
 	cout << endl << BRIGHT_CYAN << separatorIdeas << RESET << endl << endl;
@@ -8,9 +34,9 @@ void ConfigEvent::printSeparatorIdeas()
 void ConfigEvent::printInicializeEventData()
 {
 	cout << YELLOW << "INFORMACION DEL EVENTO: " << RESET << endl << endl
-		<< "Nombre del evento    |   " << BRIGHT_CYAN << nameEvent << RESET << endl
-		<< "Fecha del evento     |   " << BRIGHT_CYAN << dateEvent << RESET << endl
-		<< "Numero de segmentos  |   " << BRIGHT_CYAN << segmentsEvent << RESET << endl
+		<< "Nombre del evento    |   " << BRIGHT_CYAN << getNameEvent() << RESET << endl
+		<< "Fecha del evento     |   " << BRIGHT_CYAN << getDateEvent() << RESET << endl
+		<< "Numero de segmentos  |   " << BRIGHT_CYAN << getSizeSegmentsSpace() << RESET << endl
 		<< "Numero de asientos   |   " << BRIGHT_CYAN << calculateTotalSeats() << RESET << endl;
 }
 
@@ -31,6 +57,16 @@ void ConfigEvent::confirmSegment()
 	}
 }
 
+void ConfigEvent::setCodeDiscount(int codeDiscount)
+{
+	acountWithDiscount = codeDiscount;
+}
+
+void ConfigEvent::setDiscount(int _discount)
+{
+	discount = _discount;
+}
+
 int ConfigEvent::getSizeSegmentsSpace()
 {
 	return sizeSegmentsSpace;
@@ -39,23 +75,36 @@ int ConfigEvent::getSizeSegmentsSpace()
 int ConfigEvent::calculateTotalSeats()
 {
 	int totalSeats = 0;
-	for (int i = 0; i < sizeSegmentsSpace; i++)
-	{
-		totalSeats += (segmentsSpace[i].getNumberSeatingColumns() * segmentsSpace[i].getNumberSeatingRows());
+
+	List<Segment>::Node* current = segmentsList.getHead();
+
+
+	while (current != nullptr) {
+		totalSeats += current->data.getTotalSeats();
+		current = current->next;
 	}
+
 	return totalSeats;
 }
 
-void ConfigEvent::resizeSegmentsSpace(int newSize)
+void ConfigEvent::addSegment(Segment& segment) {
+	segmentsList.insertAtTheEnd(segment);
+	sizeSegmentsSpace++;
+	cout << "Se anadio " << segment.getTotalSeats() << endl;
+}
+
+void ConfigEvent::removeSegment(int pos) {
+	segmentsList.eliminateNode(pos);
+	sizeSegmentsSpace--;
+}
+
+bool ConfigEvent::isSegmentExists()
 {
-	Segment* newSegmentsSpace = new Segment[newSize];
-	for (int i = 0; i < sizeSegmentsSpace && i < newSize; i++)
+	if (segmentsList.getHead() == nullptr)
 	{
-		newSegmentsSpace[i] = segmentsSpace[i];
+		return false;
 	}
-	delete[] segmentsSpace;
-	segmentsSpace = newSegmentsSpace;
-	sizeSegmentsSpace = newSize;
+	return true;
 }
 
 void ConfigEvent::prepareEventData()
@@ -82,22 +131,16 @@ void ConfigEvent::printExportCurrentEvent()
 
 void ConfigEvent::deleteEvent()
 {
-	if (segmentsSpace != nullptr) {
-		delete[] segmentsSpace;
-		segmentsSpace = nullptr;
-	}
-
-	if (discountCodes != nullptr) {
-		delete[] discountCodes;
-		discountCodes = nullptr;
-	}
+	segmentsList = List<Segment>();
+	discountCodesList = List<string>();
+	temporalCodesList = List<string>();
 	nameEvent = "-";
 	dateEvent = "-";
 	segmentsEvent = 0;
 	sizeSegmentsSpace = 0;
 	codes = 0;
 	acountWithDiscount = 0;
-	discount = 0.0f;
+	discount = 0;
 	cout << GREEN << "El evento ha sido eliminado completamente." << RESET << endl;
 	system("pause");
 }
@@ -105,8 +148,28 @@ void ConfigEvent::deleteEvent()
 void ConfigEvent::configureMatrixDimensions(int segmentNumber)
 {
 	segmentNumber--;
-	totalRows = segmentsSpace[segmentNumber].getNumberSeatingRows();
-	totalColumns = segmentsSpace[segmentNumber].getNumberSeatingColumns();
+	if (segmentNumber < 0)
+	{
+		cout << "Numero de segmento no valido." << endl;
+		return;
+	}
+	List<Segment>::Node* current = segmentsList.getHead();
+	int count = 0;
+
+	while (current != nullptr && count < segmentNumber)
+	{
+		current = current->next;
+		count++;
+	}
+	if (current != nullptr)
+	{
+		totalRows = current->data.getNumberSeatingRows();
+		totalColumns = current->data.getNumberSeatingColumns();
+	}
+	else
+	{
+		cout << "Numero de segmento fuera de rango." << endl;
+	}
 }
 
 void ConfigEvent::inicializateSeatsSpace(int segmentNumber)
@@ -116,42 +179,6 @@ void ConfigEvent::inicializateSeatsSpace(int segmentNumber)
 	for (int i = 0; i < totalRows; i++)
 	{
 		availableSeats[i] = new string[totalColumns];
-	}
-}
-
-void ConfigEvent::createdSegmentSeats()
-{
-	for (int letter = 0; letter < totalRows; letter++)
-	{
-		for (int number = 0; number < totalColumns; number++)
-		{
-			string seatLabel;
-			if (letter < 26) {
-				seatLabel = string(1, 'A' + letter);
-			}
-			else {
-				char firstLetter = 'A' + (letter / 26) - 1;
-				char secondLetter = 'A' + (letter % 26);
-				seatLabel = string(1, +firstLetter) + string(1, +secondLetter);
-			}
-			availableSeats[letter][number] = seatLabel + to_string(number + 1);
-		}
-	}
-}
-
-void ConfigEvent::printSegment()
-{
-	for (int i = 0; i < sizeSegmentsSpace; i++)
-	{
-		for (int letter = 0; letter < segmentsSpace[i].getNumberSeatingRows(); letter++)
-		{
-			for (int number = 0; number < segmentsSpace[i].getNumberSeatingColumns(); number++)
-			{
-				cout << "[ |_" << availableSeats[letter][number] << "_| ] ";
-			}
-			cout << endl;
-		}
-		cout << endl;
 	}
 }
 
@@ -170,16 +197,34 @@ void ConfigEvent::getReserveSeat(string& reserveSeats)
 	}
 }
 
-void ConfigEvent::showAvaibleSeats()
+bool ConfigEvent::isEmptyTheEvent()
 {
-	printSegment();
+	typename List<Segment>::Node* currentNode = segmentsList.getHead();
+	while (currentNode != nullptr)
+	{
+		if (currentNode->data.hasReservedSeats())
+		{
+			return false;
+		}
+		currentNode = currentNode->next;
+	}
+	return true;
 }
 
 void ConfigEvent::createVectorDiscounts(int size)
 {
-	string* newVector = new string[size];
-	delete[] discountCodes;
-	discountCodes = newVector;
+	List<string> newList;
+	List<string>::Node* temp = discountCodesList.getHead();
+	int count = 0;
+
+	while (temp != nullptr && count < size)
+	{
+		newList.insertAtTheEnd(temp->data);
+		temp = temp->next;
+		count++;
+	}
+	discountCodesList = newList;
+	codes = size;
 }
 
 void ConfigEvent::generateDiscountCodes()
@@ -187,29 +232,31 @@ void ConfigEvent::generateDiscountCodes()
 	int length = 6;
 	char alphanum[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 	string code = "";
-
 	for (int i = 0; i < acountWithDiscount; i++)
 	{
+		code = "";
 		for (int j = 0; j < length; j++)
 		{
 			int randomIndex = rand() % 36;
 			code += alphanum[randomIndex];
 		}
-		discountCodes[i] = code;
-		code = "";
+		discountCodesList.insertAtTheEnd(code);
+		temporalCodesList.insertAtTheEnd(code);
 	}
 }
 
 void ConfigEvent::printCodes()
 {
-	cout << BRIGHT_CYAN << "-------------Codigos Disponibles-------------" << RESET << endl;
-	for (int i = 0; i < codes; i++)
+	cout << BRIGHT_CYAN << "------------- Codigos Disponibles -------------" << RESET << endl;
+	List<string>::Node* codesOfList = discountCodesList.getHead();
+	while (codesOfList != nullptr)
 	{
-		cout << GREEN << discountCodes[i] << " " << "||" << " ";
+		cout << GREEN << codesOfList->data << " || ";
+		codesOfList = codesOfList->next;
 	}
-	cout << '\n';
-	cout << YELLOW << "Elige la cantidad de codigos que necesites." << endl << LIGHT_PURPLE
-		<< "(Cada codigo es valido unicamente para una entrada.)" << RESET;
+	cout << endl;
+	cout << YELLOW << "Elige la cantidad de codigos que necesites." << endl << endl
+		<< LIGHT_PURPLE << "(Cada codigo es valido unicamente para una entrada.)" << RESET;
 	cout << endl << endl;
 	system("pause");
 	system("cls");
@@ -217,31 +264,26 @@ void ConfigEvent::printCodes()
 
 void ConfigEvent::deleteCode(string aCode)
 {
-	string* newDiscountCodes = new string[codes - 1];
-	for (int i = 0; i < codes; i++)
+	List<string>::Node* temp = discountCodesList.getHead();
+	List<string>::Node* previous = nullptr;
+	while (temp != nullptr)
 	{
-		if (aCode == discountCodes[i])
+		if (temp->data == aCode)
 		{
-
-			for (int j = 0, k = 0; j < codes; j++)
-			{
-				if (j != i) {
-					newDiscountCodes[k] = discountCodes[j];
-					k++;
-				}
-			}
+			discountCodesList.deleteNode(temp);
+			return;
 		}
+		previous = temp;
+		temp = temp->next;
 	}
-	delete[] discountCodes;
-	discountCodes = newDiscountCodes;
-	codes--;
+	cout << YELLOW << "Codigo no encontrado." << RESET << endl;
 }
 
 float ConfigEvent::applyCodeDiscount(Segment* spaceSegment)
 {
 	float price = spaceSegment->getPrice();
 	float priceWithDiscount = price - (price * discount / 100);
-	return priceWithDiscount; 
+	return priceWithDiscount;
 }
 
 void ConfigEvent::processPurchase(int seatsPurchased, string& numberReserveSeats)
@@ -257,7 +299,6 @@ void ConfigEvent::processPurchase(int seatsPurchased, string& numberReserveSeats
 
 	float temporalTotal = 0.0f;
 	float temporalDiscount = 0.0f;
-
 	while (seatsPurchased < totalSeatsPurchase)
 	{
 		cout << "Estado actual de los segmentos disponibles: " << endl;
@@ -286,7 +327,7 @@ void ConfigEvent::processPurchase(int seatsPurchased, string& numberReserveSeats
 		system("cls");
 	}
 	printInvoice(totalSeatsPurchase, temporalDiscount, temporalTotal + temporalDiscount, temporalTotal);
-	cout << endl << " ";
+	cout << endl;
 	system("pause");
 	system("cls");
 }
@@ -295,11 +336,11 @@ int ConfigEvent::getTotalSeatsPurchase()
 {
 	float aux = 0.0f;
 	int totalSeatsPurchase = 0;
-	do {
+	do
+	{
 		cout << endl << "Digite la cantidad de asientos que desea comprar: ";
 		cin >> aux;
 		totalSeatsPurchase = static_cast<int>(aux);
-
 		if (totalSeatsPurchase > 5 || totalSeatsPurchase > freeSeats)
 		{
 			cout << RED << "ERROR. El maximo son 5 asientos / No hay asientos suficientes. Intente de nuevo: " << RESET << endl;
@@ -334,11 +375,19 @@ string ConfigEvent::getDiscountCode()
 	int option = 0;
 	if (codes > 0)
 	{
-		cout << "Posee un codigo de descuento? " << endl <<
-			"1. " << GREEN << "SI" << RESET << endl <<
-			"2. " << RED << "NO" << RESET << endl <<
-			"Opcion: ";
-		cin >> option;
+		do {
+			cout << "Posee un codigo de descuento? " << endl <<
+				"1. " << GREEN << "SI" << RESET << endl <<
+				"2. " << RED << "NO" << RESET << endl <<
+				"Opcion: ";
+			cin >> option;
+			if (cin.fail() || (option < 1 || option > 2)) {
+				cin.clear();
+				cin.ignore(10000, '\n');
+				cout << RED << "Opcion invalida. Por favor, intente de nuevo." << RESET << endl;
+			}
+		} while (option < 1 || option > 2);
+
 		if (option == 1)
 		{
 			cout << "Digite su codigo de descuento: ";
@@ -359,24 +408,39 @@ string ConfigEvent::getDiscountCode()
 
 bool ConfigEvent::reserveSeatInSegment(int temporalSegment, string& numberReserveSeats)
 {
-	string selectNewSeat;
-	bool reservedSeatFront;
-	do
+	string chosen_seat;
+	bool is_seat_reserved = false;
+
+	typename List<Segment>::Node* currentNode = segmentsList.getHead();
+	int index = 1;
+
+	while (currentNode != nullptr && index < temporalSegment)
 	{
-		cout << "Introduce el asiento (por ejemplo, A1): ";
-		cin >> selectNewSeat;
+		currentNode = currentNode->next;
+		index++;
+	}
+	if (currentNode != nullptr)
+	{
+		do {
+			cout << "Introduce el asiento (por ejemplo, A1): ";
+			cin >> chosen_seat;
+			is_seat_reserved = currentNode->data.reserveSeat(chosen_seat);
 
-		reservedSeatFront = segmentsSpace[temporalSegment - 1].reserveSeat(selectNewSeat);
-		if (!reservedSeatFront)
-		{
-			cout << RED << "El asiento " << selectNewSeat << " no existe o ya esta reservado." << RESET << endl;
-		}
-	} while (!reservedSeatFront);
+			if (!is_seat_reserved)
+			{
+				cout << RED << "El asiento " << chosen_seat << " no existe o ya esta reservado." << RESET << endl;
+			}
+		} while (!is_seat_reserved);
 
-	client.addReservedSeat(selectNewSeat);
-	numberReserveSeats += selectNewSeat + " ";
-	cout << "Asiento " << selectNewSeat << " reservado correctamente." << endl;
-	return reservedSeatFront;
+		client.addReservedSeat(chosen_seat);
+		numberReserveSeats += chosen_seat + " ";
+		cout << "Asiento " << chosen_seat << " reservado correctamente." << endl;
+	}
+	else
+	{
+		cout << RED << "Segmento no encontrado." << RESET << endl;
+	}
+	return is_seat_reserved;
 }
 
 float ConfigEvent::calculateTotalPrice(string auxCode, int temporalSegment)
@@ -423,47 +487,71 @@ void ConfigEvent::controlTicketSoldEvent()
 
 void ConfigEvent::reserveSeatInSegment(int segmentIndex, const string& seatCode)
 {
-	if (segmentIndex < 0 || segmentIndex >= sizeSegmentsSpace)
+	typename List<Segment>::Node* currentNode = segmentsList.getHead();
+	int index = 0;
+
+	while (currentNode != nullptr && index < segmentIndex)
 	{
-		cout << "Segmento invalido." << endl;
-		return;
+		currentNode = currentNode->next;
+		index++;
 	}
-	if (segmentsSpace[segmentIndex].reserveSeat(seatCode))
+	if (currentNode != nullptr)
 	{
-		cout << "Asiento " << seatCode << " reservado correctamente." << endl;
+		if (currentNode->data.reserveSeat(seatCode))
+		{
+			cout << "Asiento " << seatCode << " reservado correctamente." << endl;
+		}
+		else
+		{
+			cout << "El asiento " << seatCode << " no esta disponible o no existe." << endl;
+		}
 	}
 	else
 	{
-		cout << "El asiento " << seatCode << " no está disponible o no existe." << endl;
+		cout << "Segmento invalido." << endl;
 	}
 }
 
 void ConfigEvent::showStatusOfEvent()
 {
-	if (sizeSegmentsSpace <= 0)
+	if (segmentsList.getSize() <= 0)
 	{
 		cout << RED << "ERROR. Configure un evento. " << RESET << endl << endl;
 	}
-	else {
-		for (int i = 0; i < sizeSegmentsSpace; i++)
+	else
+	{
+		typename List<Segment>::Node* currentNode = segmentsList.getHead();
+
+		while (currentNode != nullptr)
 		{
-			if (isFullEvent())
+			if (isFullEventTwo())
 			{
 				cout << RED << "EL EVENTO ESTA LLENO" << RESET << endl << endl;
 				return;
 			}
-			cout << "Segmento " << i + 1 << ":\n";
-			segmentsSpace[i].printSeats();
+			cout << "Segmento:" << endl;
+			currentNode->data.printSeats();
+			currentNode = currentNode->next;
 		}
 	}
 }
 
 Segment* ConfigEvent::getSegment(int pos)
 {
-	return &segmentsSpace[pos];
+	typename List<Segment>::Node* currentNode = segmentsList.getHead();
+	for (int i = 0; i < pos; ++i)
+	{
+		if (currentNode == nullptr)
+		{
+			cout << "Posicion fuera de rango." << endl;
+			return nullptr;
+		}
+		currentNode = currentNode->next;
+	}
+	return &currentNode->data;
 }
 
-bool ConfigEvent::isSegmentExist()
+bool ConfigEvent::isSegmentExistTwo()
 {
 	if (getSizeSegmentsSpace() == 0)
 	{
@@ -482,10 +570,13 @@ bool ConfigEvent::isDiscountNumExist()
 }
 
 bool ConfigEvent::isCodeExist(string code) {
-	for (int i = 0; i < codes; i++) {
-		if (code == discountCodes[i]) {
+	typename List<string>::Node* currentNode = discountCodesList.getHead();
+
+	while (currentNode != nullptr) {
+		if (code == currentNode->data) {
 			return true;
 		}
+		currentNode = currentNode->next;
 	}
 	return false;
 }
@@ -505,27 +596,227 @@ bool ConfigEvent::isSeatAvailable(string& reserveSeats)
 	return false;
 }
 
-bool ConfigEvent::isFullEvent()
+bool ConfigEvent::isFullEventTwo()
 {
-	for (int i = 0; i < sizeSegmentsSpace; i++)
-	{
-		if (segmentsSpace[i].isFullTheEvent())
-		{
+	typename List<Segment>::Node* currentNode = segmentsList.getHead();
+
+	while (currentNode != nullptr) {
+		if (!currentNode->data.isFullTheEvent()) {
 			return false;
-			break;
 		}
+		currentNode = currentNode->next;
 	}
 	return true;
 }
 
-void ConfigEvent::verifyIntegerNumber()
+void ConfigEvent::resizeSegmentsSpace(int newSize)
 {
-	while (true)
-	{
-		if (cin.fail())
-		{
+	int currentSize = segmentsList.getSize();
 
+	if (newSize > currentSize)
+	{
+		for (int i = 0; i < newSize - currentSize; ++i)
+		{
+			Segment newSegment;
+			segmentsList.insertAtTheEnd(newSegment);
 		}
+	}
+	else if (newSize < currentSize)
+	{
+		for (int i = 0; i < currentSize - newSize; ++i)
+		{
+			segmentsList.removeLast();
+		}
+	}
+}
+
+void ConfigEvent::changeSegmentDimension()
+{
+	if (!isSegmentExists())
+	{
+		cout << RED "ERROR. No existen segmentos creados" << RESET << endl;
+		cout << endl;
+		system("pause");
+		system("cls");
+		return;
+	}
+	cout << GREEN << "Cantidad de segmentos actuales: " << getSizeSegmentsSpace() << RESET << endl << endl;
+	int segmentToRefer;
+	cout << "Ingrese el indice del segmento que desea modificar: ";
+	cin >> segmentToRefer;
+	while (segmentToRefer < 1 || segmentToRefer > 2)
+	{
+		cout << RED << "ERROR. Ingrese numero valido: " << RESET;
+		cin >> segmentToRefer;
+	}
+	changePosicSegmentDimension(segmentToRefer - 1);
+}
+
+void ConfigEvent::changePosicSegmentDimension(int pos)
+{
+	typename List<Segment>::Node* currentNode = segmentsList.getHead();
+	int index = 0;
+
+	while (currentNode != nullptr && index < pos)
+	{
+		currentNode = currentNode->next;
+		index++;
+	}
+	if (currentNode != nullptr)
+	{
+		if (currentNode->data.isEmpty())
+		{
+			int temporalRows, temporalColumns;
+			float temporalPrice;
+			cout << "SEGMENTO VACIO." << endl << endl;
+			cout << "1. Cambiar dimensiones" << endl;
+			cout << "2. Eliminar segmento" << endl;
+			int option;
+			cin >> option;
+
+			while (option < 1 || option > 2)
+			{
+				cout << RED << "ERROR. Ingrese numero valido: " << RESET;
+				cin >> option;
+			}
+			if (option == 1)
+			{
+				cout << "Ingrese nueva fila: ";
+				cin >> temporalRows;
+				cout << "Ingrese nueva columna: ";
+				cin >> temporalColumns;
+				cout << "Ingrese el nuevo precio: ";
+				cin >> temporalPrice;
+				system("cls");
+				currentNode->data.updateData(temporalRows, temporalColumns, temporalPrice);
+				cout << GREEN << "SEGMENTO ACTUALIZADO CORRECTAMENTE." << RESET << endl;
+				cout << endl;
+				system("pause");
+				system("cls");
+			}
+			else if (option == 2)
+			{
+				system("cls");
+				removeSegment(pos);
+				cout << GREEN << "SEGMENTO ELIMINADO CORRECTAMENTE." << RESET << endl;
+				cout << endl;
+				system("pause");
+				system("cls");
+			}
+		}
+		else
+		{
+			system("cls");
+			cout << RED << "ERROR. el segmento almenos tiene un asiento ocupado." << RESET << endl;
+			system("pause");
+			system("cls");
+		}
+	}
+}
+
+void ConfigEvent::deleteSpecificCodeDiscount()
+{
+	string tempCode;
+	cout << "Ingrese el codigo que desea eliminar: " << endl;
+	cin >> tempCode;
+
+	List<string>::Node* current = discountCodesList.getHead();
+	List<string>::Node* previous = nullptr;
+
+	while (current != nullptr)
+	{
+		if (current->data == tempCode)
+		{
+			if (previous == nullptr)
+			{
+				discountCodesList.deleteNode(current);
+				current = discountCodesList.getHead();
+			}
+			else
+			{
+				previous->next = current->next;
+				delete current;
+				current = previous->next;
+			}
+			system("cls");
+			cout << GREEN << "Codigo eliminado exitosamente." << RESET << endl;
+			cout << endl;
+			system("pause");
+			system("cls");
+			return;
+		}
+		previous = current;
+		current = current->next;
+	}
+	system("cls");
+	cout << RED << "Codigo no encontrado." << RESET << endl;
+	cout << endl;
+	system("pause");
+	system("cls");
+}
+
+void ConfigEvent::restoreDiscountCode(string& code)
+{
+	discountCodesList.insertAtTheEnd(code);
+}
+
+void ConfigEvent::deleteTickets()
+{
+	int segmentIndex;
+	cout << "Ingrese segmento donde desea eliminar el asiento: ";
+	cin >> segmentIndex;
+
+	if (segmentIndex < 1 || segmentIndex > sizeSegmentsSpace)
+	{
+		cout << RED << "Segmento invalido." << RESET << endl;
+		return;
+	}
+
+	string seatCode;
+	cout << "Ingrese el codigo del asiento a eliminar: ";
+	cin >> seatCode;
+	Segment* segment = getSegment(segmentIndex - 1);
+	if (segment == nullptr)
+	{
+		cout << RED << "Segmento no encontrado." << RESET << endl;
+		return;
+	}
+	if (!segment->isSeatReserved(seatCode))
+	{
+		segment->resetSeats(seatCode);
+		char usedDiscount;
+		cout << "¿Se utilizo un codigo de descuento para este asiento? (s/n): ";
+		cin >> usedDiscount;
+
+		if (usedDiscount == 's' || usedDiscount == 'S')
+		{
+			string discountCode;
+			bool validCode = false;
+			do
+			{
+				cout << "Ingrese el código de descuento utilizado: ";
+				cin >> discountCode;
+
+				if (discountCodesList.findData(discountCode))
+				{
+					cout << RED << "Codigo vigente. " << RESET << endl;
+				}
+				else if (temporalCodesList.findData(discountCode))
+				{
+					restoreDiscountCode(discountCode);
+					validCode = true;
+				}
+				else
+				{
+					cout << RED << "Codigo no valido. Ingrese un codigo que anteriormente existia." << RESET << endl;
+				}
+			} while (!validCode);
+		}
+		cout << "Entrada eliminada y asiento reestablecido correctamente." << endl;
+	}
+	else
+	{
+		cout << RED << "El asiento no esta reservado o no existe." << RESET << endl;
 	}
 }
 
@@ -551,21 +842,24 @@ void ConfigEvent::captureEventData(int& temporalRows, int& temporalColumns, floa
 	printSeparatorIdeas();
 	cout << BRIGHT_WHITE << "Ingrese el numero de segmentos (mayor a 0): " << RESET;
 	cin >> aux;
-	segmentsEvent = static_cast <int>(aux);
+	segmentsEvent = static_cast<int>(aux);
 	printSeparatorIdeas();
 	confirmSegment();
+	sizeSegmentsSpace = segmentsEvent;
 	resizeSegmentsSpace(segmentsEvent);
+
 	cout << BRIGHT_WHITE << "Ingrese la cantidad de entradas que desea que posean descuento: " << RESET;
 	cin >> aux;
-	acountWithDiscount = static_cast <int>(aux);
+	acountWithDiscount = static_cast<int>(aux);
 	codes = acountWithDiscount;
 	createVectorDiscounts(acountWithDiscount);
 	generateDiscountCodes();
+
 	if (acountWithDiscount != 0)
 	{
 		cout << BRIGHT_WHITE << "Ingrese el porcentaje de descuento deseado: " << RESET;
 		cin >> aux;
-		discount = static_cast <int>(aux);
+		discount = static_cast<int>(aux);
 		printSeparatorIdeas();
 	}
 	else
@@ -573,18 +867,24 @@ void ConfigEvent::captureEventData(int& temporalRows, int& temporalColumns, floa
 		discount = 0;
 		printSeparatorIdeas();
 	}
-	for (int i = 0; i < sizeSegmentsSpace; i++)
+	typename List<Segment>::Node* currentNode = segmentsList.getHead();
+	for (int i = 0; currentNode != nullptr; i++)
 	{
 		cout << BRIGHT_WHITE << "Ingrese el numero de filas del segmento " << RESET << i + 1 << ": ";
 		cin >> aux;
-		temporalRows = static_cast <int>(aux);
+		temporalRows = static_cast<int>(aux);
+
 		cout << BRIGHT_WHITE << "Ingrese el numero de columnas del segmento " << RESET << i + 1 << ": ";
 		cin >> aux;
-		temporalColumns = static_cast <int>(aux);
+		temporalColumns = static_cast<int>(aux);
+
 		cout << BRIGHT_WHITE << "Ingrese el precio de cada asiento del segmento " << RESET << i + 1 << ": ";
 		cin >> temporalPrice;
 		printSeparatorIdeas();
-		segmentsSpace[i].updateData(temporalRows, temporalColumns, temporalPrice);
+
+		currentNode->data.updateData(temporalRows, temporalColumns, temporalPrice);
+
+		currentNode = currentNode->next;
 	}
 	freeSeats = calculateTotalSeats();
 }

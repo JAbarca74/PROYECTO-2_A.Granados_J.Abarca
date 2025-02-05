@@ -34,28 +34,17 @@ void Client::collectAllInformation()
 
 void Client::addIdentificationList(string identification)
 {
-	string* newIdentificationDyna = new string[totalCollectIdentification + 1];
-
-	for (int i = 0; i < totalCollectIdentification; i++)
-	{
-		newIdentificationDyna[i] = collectIdentification[i];
-	}
-	newIdentificationDyna[totalCollectIdentification] = identification;
-	delete[] collectIdentification;
-	collectIdentification = newIdentificationDyna;
-	totalCollectIdentification++;
+	collectIdentification.insertAtTheEnd(identification);
 }
 
+//CAMBIAR
 bool Client::isValidClient(string identification)
 {
-	for (int i = 0; i < totalCollectIdentification; i++)
+	if (collectIdentification.findData(identification) == false)
 	{
-		if (identification == collectIdentification[i])
-		{
-			return false;
-		}
+		return true;
 	}
-	return true;
+	return false;
 }
 
 void Client::validateID(string identification)
@@ -92,54 +81,29 @@ void Client::validateID(string identification)
 		}
 		if (!allDigits) {
 			cout << RED << "Solo contiene numeros. " << RESET << "Ingrese nuevamente la cedula: ";
-			getline(cin, identification); // Pedir una nueva entrada
+			getline(cin, identification);
 			continue;
 		}
 		flag = true;
 	}
 }
-void Client::addReservedSeat(const string& seatCode)
+void Client::addReservedSeat(string& seatCode)
 {
-
-	string* newReservedSeats = new string[numberOfSeats + 1];
-	for (int i = 0; i < numberOfSeats; i++)
-	{
-		newReservedSeats[i] = reservedSeats[i];
-	}
-	newReservedSeats[numberOfSeats] = seatCode;
-	delete[] reservedSeats;
-	reservedSeats = newReservedSeats;
-	numberOfSeats++;
+	reservedSeats.insertAtTheEnd(seatCode);
 }
 
 void Client::showReservedSeats()
 {
-	if (numberOfSeats == 0)
-	{
-		cout << "No hay asientos reservados para este cliente." << endl;
-		return;
+	List<string>::Node* temp = reservedSeats.getHead();
+	while (temp != nullptr) {
+		cout << temp->data << " ";
+		temp = temp->next;
 	}
-
-	cout << "Asientos reservados por " << personName << ": ";
-	for (int i = 0; i < numberOfSeats; i++)
-	{
-		cout << reservedSeats[i] << " ";
-	}
-	cout << endl;
-}
-
-void Client::setNumberOfSeats(int aNumber) {
-	numberOfSeats = aNumber;
-}
-
-int Client::getNumberOfSeats()
-{
-	return numberOfSeats;
 }
 
 void Client::cleanIdentificationList()
 {
-	delete[] collectIdentification;
+	collectIdentification = List<string>();
 }
 
 void Client::inputSum(float price) {

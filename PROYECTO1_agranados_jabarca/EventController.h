@@ -1,5 +1,6 @@
 #pragma once
 #include "ConfigEvent.h"
+#include "Archive.h"
 #include <iostream>
 #include <string>
 #define WHITE "\033[97m" 
@@ -26,17 +27,19 @@ private:
 	int spaceText;
 	ConfigEvent configEvent;
 	Segment segment;
+	Archive archive;
 	void printPrincipalMenu();
 	void printConfigMenu();
 	void printConfigPriceDiscountMenu();
 	void printTicketSellMenu();
 	void printShowSegmentSeatsFlow(const int& segmentNumber);
+	void printMenuDeleteFlow();
 	void validateUserOption(int& userOption);
 	void captureMenuOption();
 	void controlConfigMenuFlow();
 	void controlPriceDiscountMenuFlow();
 	void controlTicketSellMenuFlow();
-	void controlShowSegmentSeatsFlow();
+	void controlDeleteTicketMenuFlow();
 	void printAboutUs();
 
 public:

@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <string>
+#include "List.h"
 #include "DateProcessorTool.h"
 #define RED "\033[31m"
 #define YELLOW "\033[33m" 
@@ -13,26 +14,22 @@ private:
 	string identification;
 	string personName;
 	string birthdayDate;
-	string* reservedSeats;
-	int numberOfSeats;
+	List<string> reservedSeats;
 	float totalInvoice;
 	float applyDiscount;
-	string* collectIdentification;
-	int totalCollectIdentification;
+	List<string> collectIdentification;
 	DateProcessorTool dateProcessorTool;
 
 public:
-	Client() : personName(""), identification(""), birthdayDate(""), reservedSeats(nullptr), numberOfSeats(0),
-		collectIdentification(nullptr), totalCollectIdentification(0), dateProcessorTool(), totalInvoice(0.0), applyDiscount(0.0) {
+	Client() : personName(""), identification(""), birthdayDate(""),
+		dateProcessorTool(), totalInvoice(0.0), applyDiscount(0.0) {
 	};
 	void collectAllInformation();
 	void addIdentificationList(string identification);
 	bool isValidClient(string identification);
 	void validateID(string id);
-	void addReservedSeat(const string& seatCode);
+	void addReservedSeat(string& seatCode);
 	void showReservedSeats();
-	void setNumberOfSeats(int aNumber);
-	int getNumberOfSeats();
 	string getIdentification();
 	string getPersonName();
 	string getBirthdayDate();

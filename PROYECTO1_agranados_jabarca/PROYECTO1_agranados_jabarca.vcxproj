@@ -133,18 +133,23 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Archive.cpp" />
     <ClCompile Include="Client.cpp" />
     <ClCompile Include="ConfigEvent.cpp" />
     <ClCompile Include="DateProcessorTool.cpp" />
     <ClCompile Include="EventController.cpp" />
     <ClCompile Include="PROYECTO1_agranados_jabarca.cpp" />
+    <ClCompile Include="ReportViewer.cpp" />
     <ClCompile Include="Segment.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Archive.h" />
     <ClInclude Include="Client.h" />
     <ClInclude Include="ConfigEvent.h" />
     <ClInclude Include="DateProcessorTool.h" />
     <ClInclude Include="EventController.h" />
+    <ClInclude Include="List.h" />
+    <ClInclude Include="ReportViewer.h" />
     <ClInclude Include="Segment.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
